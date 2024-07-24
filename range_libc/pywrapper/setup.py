@@ -95,8 +95,8 @@ def locate_cuda():
 
 
 # compiler_flags = ["-w","-std=c++11", "-march=native", "-ffast-math", "-fno-math-errno"]
-compiler_flags = ["-w","-std=c++11", "-march=native", "-ffast-math", "-fno-math-errno", "-O3"]
-nvcc_flags = ['-arch=sm_62', '--ptxas-options=-v', '-c', '--compiler-options', "'-fPIC'", "-w","-std=c++11"]
+compiler_flags = ["-w","-std=c++11", "-march=native", "-ffast-math", "-fno-math-errno", "-O3", "-fPIC"]
+nvcc_flags = ['-arch=sm_80', '--ptxas-options=-v', '-c', '--compiler-options', "'-fPIC'", "-w","-std=c++11"]
 include_dirs = ["../", numpy_include]
 depends = ["../includes/*.h"]
 sources = ["RangeLibc.pyx","../vendor/lodepng/lodepng.cpp"]
@@ -170,8 +170,9 @@ class custom_build_ext(build_ext):
         build_ext.build_extensions(self)
 
 if use_cuda:
+    Xcompiler_flags = ["-Xcompiler", ','.join(compiler_flags)]
     ext = Extension("range_libc", sources, 
-                    extra_compile_args = {'gcc': compiler_flags, 'nvcc': nvcc_flags},
+                    extra_compile_args = {'gcc': Xcompiler_flags, 'nvcc': nvcc_flags},
                     extra_link_args = ["-std=c++11"],
                     include_dirs = include_dirs,
                     library_dirs=[CUDA['lib64']],
