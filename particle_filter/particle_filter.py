@@ -39,7 +39,7 @@ import tf_transformations
 
 # messages
 from std_msgs.msg import String, Header, Float32MultiArray
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import LaserScan, Joy
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point, Pose, PoseStamped, PoseArray, Quaternion, PolygonStamped, Polygon, Point32, PoseWithCovarianceStamped, PointStamped, TransformStamped
 from nav_msgs.msg import Odometry
@@ -189,6 +189,11 @@ class ParticleFiler(Node):
             PointStamped,
             '/clicked_point',
             self.clicked_pose,
+            1)
+        self.joy_sub = self.create_subscription(
+            Joy,
+            '/joy',
+            self.reset_pose,
             1)
 
         self.get_logger().info('Finished initializing, waiting on messages...')
@@ -376,6 +381,21 @@ class ParticleFiler(Node):
         # this topic is slower than lidar, so update every time we receive a message
         self.update()
 
+    def reset_pose(self, msg):
+        '''
+        Receive joy messages from joy node and initialize the particle distribution with last pose.
+        '''
+        reset_button_idx = 9   # options button
+        if msg.buttons[reset_button_idx] == 1 and isinstance(self.last_pose, np.ndarray):
+            self.get_logger().info('RESET POSE')
+            self.get_logger().info(str([self.last_pose[0], self.last_pose[1]]))
+            self.state_lock.acquire()
+            self.weights = np.ones(self.MAX_PARTICLES) / float(self.MAX_PARTICLES)
+            self.particles[:,0] = self.last_pose[0] + np.random.normal(loc=0.0,scale=0.5,size=self.MAX_PARTICLES)
+            self.particles[:,1] = self.last_pose[1] + np.random.normal(loc=0.0,scale=0.5,size=self.MAX_PARTICLES)
+            self.particles[:,2] = self.last_pose[2] + np.random.normal(loc=0.0,scale=0.4,size=self.MAX_PARTICLES)
+            self.state_lock.release()
+    
     def clicked_pose(self, msg):
         '''
         Receive pose messages from RViz and initialize the particle distribution in response.
