@@ -383,17 +383,17 @@ class ParticleFiler(Node):
 
     def reset_pose(self, msg):
         '''
-        Receive joy messages from joy node and initialize the particle distribution with last pose.
+        Receive joy messages from joy node and initialize the particle distribution with last inferred_pose.
         '''
         reset_button_idx = 9   # options button
-        if msg.buttons[reset_button_idx] == 1 and isinstance(self.last_pose, np.ndarray):
+        if msg.buttons[reset_button_idx] == 1 and isinstance(self.inferred_pose, np.ndarray):
             self.get_logger().info('RESET POSE')
-            self.get_logger().info(str([self.last_pose[0], self.last_pose[1]]))
+            self.get_logger().info(str([self.inferred_pose[0], self.inferred_pose[1]]))
             self.state_lock.acquire()
             self.weights = np.ones(self.MAX_PARTICLES) / float(self.MAX_PARTICLES)
-            self.particles[:,0] = self.last_pose[0] + np.random.normal(loc=0.0,scale=0.5,size=self.MAX_PARTICLES)
-            self.particles[:,1] = self.last_pose[1] + np.random.normal(loc=0.0,scale=0.5,size=self.MAX_PARTICLES)
-            self.particles[:,2] = self.last_pose[2] + np.random.normal(loc=0.0,scale=0.4,size=self.MAX_PARTICLES)
+            self.particles[:,0] = self.inferred_pose[0] + np.random.normal(loc=0.0,scale=0.5,size=self.MAX_PARTICLES)
+            self.particles[:,1] = self.inferred_pose[1] + np.random.normal(loc=0.0,scale=0.5,size=self.MAX_PARTICLES)
+            self.particles[:,2] = self.inferred_pose[2] + np.random.normal(loc=0.0,scale=0.4,size=self.MAX_PARTICLES)
             self.state_lock.release()
     
     def clicked_pose(self, msg):
