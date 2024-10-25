@@ -691,6 +691,9 @@ class ParticleFiler(Node):
 
                 # compute the expected value of the robot pose
                 self.inferred_pose = self.expected_pose()
+                # laser to base_link
+                self.inferred_pose[0] = self.inferred_pose[0] - 0.27 * np.cos(self.inferred_pose[2])
+                self.inferred_pose[1] = self.inferred_pose[1] - 0.27 * np.sin(self.inferred_pose[2])
                 self.state_lock.release()
                 t2 = time.time()
 
